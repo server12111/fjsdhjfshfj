@@ -176,6 +176,14 @@ async def msg_captcha_answer(
         pch_url_row = await session.get(BotSettings, "payments_channel_url")
         channel_url = pch_url_row.value if pch_url_row and pch_url_row.value else None
 
+        # If no explicit URL, auto-build from payments_channel_id (@username)
+        if not channel_url:
+            pch_id_row = await session.get(BotSettings, "payments_channel_id")
+            if pch_id_row and pch_id_row.value:
+                ch_id = pch_id_row.value.strip()
+                if ch_id.startswith("@"):
+                    channel_url = f"https://t.me/{ch_id[1:]}"
+
         await message.answer(
             f"✅ <b>Заявка #{withdrawal.id} принята!</b>\n\n"
             f"Сумма: <b>{amount} ⭐</b>\n"
@@ -204,3 +212,4 @@ async def msg_captcha_answer(
                 parse_mode="HTML",
                 reply_markup=captcha_cancel_kb(),
             )
+
